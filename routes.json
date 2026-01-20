@@ -1,0 +1,123 @@
+[
+  {
+    "handler": "interfaces/kol.list",
+    "path": "api/kols",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/kol.findById",
+    "path": "api/kols/:id",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/kol.create",
+    "path": "api/kols",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/kol.update",
+    "path": "api/kols/:id",
+    "method": "put"
+  },
+  {
+    "handler": "interfaces/kol.remove",
+    "path": "api/kols/:id",
+    "method": "delete"
+  },
+  {
+    "handler": "interfaces/visit.list",
+    "path": "api/visits",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/visit.findById",
+    "path": "api/visits/:id",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/visit.create",
+    "path": "api/visits",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/visit.update",
+    "path": "api/visits/:id",
+    "method": "put"
+  },
+  {
+    "handler": "interfaces/visit.remove",
+    "path": "api/visits/:id",
+    "method": "delete"
+  },
+  {
+    "handler": "interfaces/document.list",
+    "path": "api/documents",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/document.findById",
+    "path": "api/documents/:id",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/document.create",
+    "path": "api/documents",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/document.update",
+    "path": "api/documents/:id",
+    "method": "put"
+  },
+  {
+    "handler": "interfaces/document.remove",
+    "path": "api/documents/:id",
+    "method": "delete"
+  },
+  {
+    "handler": "interfaces/briefing.get",
+    "path": "api/briefings/:kolId",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/dashboard.getMetrics",
+    "path": "api/dashboard/metrics",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/chat.sendMessage",
+    "path": "api/chat/message",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/sync.sync",
+    "path": "api/sync",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/seed.seed",
+    "path": "api/data/seed",
+    "method": "post",
+    "private": false
+  },
+  {
+    "handler": "interfaces/audio.upload",
+    "path": "api/visits/:visitId/audio",
+    "method": "post"
+  },
+  {
+    "handler": "interfaces/audio.getStatus",
+    "path": "api/visits/:visitId/audio/:audioId",
+    "method": "get"
+  },
+  {
+    "handler": "interfaces/audio.updateTranscript",
+    "path": "api/visits/:visitId/audio/:audioId/transcript",
+    "method": "put"
+  },
+  {
+    "handler": "interfaces/audio.remove",
+    "path": "api/visits/:visitId/audio/:audioId",
+    "method": "delete"
+  }
+]

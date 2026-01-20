@@ -1,0 +1,1439 @@
+openapi: 3.0.3
+info:
+  title: Backend MSL API
+  description: API REST para sistema MSL (Medical Science Liaison) - Gestão de relacionamento com Key Opinion Leaders (KOLs)
+  version: 1.0.0
+  contact:
+    name: MSL Backend Team
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desenvolvimento
+  - url: https://api.exemplo.com
+    description: Servidor de produção
+
+tags:
+  - name: KOLs
+    description: Gestão de Key Opinion Leaders
+  - name: Visits
+    description: Gestão de visitas
+  - name: Documents
+    description: Central de conhecimento
+  - name: Briefings
+    description: Briefings inteligentes
+  - name: Dashboard
+    description: Métricas e dashboard
+  - name: Chat
+    description: Chat inteligente
+  - name: Sync
+    description: Sincronização de dados
+  - name: Seed
+    description: Dados de desenvolvimento
+  - name: Audio
+    description: Upload e transcrição de áudio
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API Key para autenticação
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT para autenticação
+
+  schemas:
+    KOL:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          example: "Dr. João Silva"
+        photo:
+          type: string
+          nullable: true
+          example: null
+        specialty:
+          type: string
+          example: "Oncologia"
+        institution:
+          type: string
+          example: "Hospital Sírio-Libanês"
+        email:
+          type: string
+          format: email
+          example: "joao.silva@hospital.com.br"
+        crm:
+          type: string
+          nullable: true
+          example: "123456-SP"
+        profile:
+          type: string
+          enum: [prescriber, hospital_manager, payer, pharmacist, researcher]
+          example: "prescriber"
+        level:
+          type: integer
+          minimum: 0
+          maximum: 6
+          example: 4
+          description: "0: Sem Engajamento, 1: Conhecimento, 2: Interesse, 3: Adotante, 4: Defensor, 5: Embaixador, 6: Parceiro Estratégico"
+        lastVisit:
+          type: string
+          format: date
+          nullable: true
+          example: "2024-11-15"
+        nextVisit:
+          type: string
+          format: date
+          nullable: true
+          example: "2024-12-20"
+        tags:
+          type: array
+          items:
+            type: string
+            enum: [efficacy, safety, access, cost-effectiveness, protocol, clinical-data, competition]
+          example: ["efficacy", "safety"]
+
+    KOLCreate:
+      type: object
+      required:
+        - name
+        - specialty
+        - institution
+        - email
+        - profile
+        - level
+      properties:
+        name:
+          type: string
+        specialty:
+          type: string
+        institution:
+          type: string
+        email:
+          type: string
+          format: email
+        crm:
+          type: string
+        profile:
+          type: string
+          enum: [prescriber, hospital_manager, payer, pharmacist, researcher]
+        level:
+          type: integer
+          minimum: 0
+          maximum: 6
+        tags:
+          type: array
+          items:
+            type: string
+            enum: [efficacy, safety, access, cost-effectiveness, protocol, clinical-data, competition]
+
+    KOLUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        specialty:
+          type: string
+        institution:
+          type: string
+        email:
+          type: string
+          format: email
+        crm:
+          type: string
+        profile:
+          type: string
+          enum: [prescriber, hospital_manager, payer, pharmacist, researcher]
+        level:
+          type: integer
+          minimum: 0
+          maximum: 6
+        tags:
+          type: array
+          items:
+            type: string
+
+    Visit:
+      type: object
+      properties:
+        id:
+          type: string
+        kolId:
+          type: string
+        kolName:
+          type: string
+        kolSpecialty:
+          type: string
+        date:
+          type: string
+          format: date
+          example: "2024-12-15"
+        time:
+          type: string
+          pattern: '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+          example: "14:30"
+        format:
+          type: string
+          enum: [presential, remote]
+        remoteLink:
+          type: string
+          nullable: true
+        agenda:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, completed, cancelled]
+        notes:
+          type: string
+          nullable: true
+        audioTranscript:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        levelChange:
+          type: object
+          nullable: true
+          properties:
+            from:
+              type: integer
+            to:
+              type: integer
+            justification:
+              type: string
+
+    VisitCreate:
+      type: object
+      required:
+        - kolId
+        - date
+        - time
+        - format
+        - agenda
+      properties:
+        kolId:
+          type: string
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        format:
+          type: string
+          enum: [presential, remote]
+        remoteLink:
+          type: string
+        agenda:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    VisitUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        format:
+          type: string
+          enum: [presential, remote]
+        remoteLink:
+          type: string
+        agenda:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, completed, cancelled]
+        notes:
+          type: string
+        audioTranscript:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        levelChange:
+          type: object
+          properties:
+            from:
+              type: integer
+            to:
+              type: integer
+            justification:
+              type: string
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        category:
+          type: string
+          enum: [articles, studies, behavioral, knowledge-base]
+        description:
+          type: string
+        url:
+          type: string
+        type:
+          type: string
+          enum: [pdf, doc, link]
+        date:
+          type: string
+          format: date
+        tags:
+          type: array
+          items:
+            type: string
+
+    DocumentCreate:
+      type: object
+      required:
+        - title
+        - category
+        - description
+        - url
+        - type
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+          enum: [articles, studies, behavioral, knowledge-base]
+        description:
+          type: string
+        url:
+          type: string
+        type:
+          type: string
+          enum: [pdf, doc, link]
+        date:
+          type: string
+          format: date
+        tags:
+          type: array
+          items:
+            type: string
+
+    SmartBriefing:
+      type: object
+      properties:
+        kolId:
+          type: string
+        continuityReminder:
+          type: string
+        contentSuggestion:
+          type: string
+        levelAlert:
+          type: string
+          nullable: true
+        generatedAt:
+          type: string
+          format: date-time
+
+    DashboardMetrics:
+      type: object
+      properties:
+        totalKols:
+          type: integer
+        scheduledVisits:
+          type: integer
+        completedVisitsMonth:
+          type: integer
+        avgEngagementLevel:
+          type: number
+        levelDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+        trends:
+          type: object
+          nullable: true
+          properties:
+            totalKols:
+              $ref: '#/components/schemas/MetricTrend'
+            scheduledVisits:
+              $ref: '#/components/schemas/MetricTrend'
+            completedVisitsMonth:
+              $ref: '#/components/schemas/MetricTrend'
+            avgEngagementLevel:
+              $ref: '#/components/schemas/MetricTrend'
+        targets:
+          type: object
+          nullable: true
+          properties:
+            completedVisitsMonth:
+              type: integer
+
+    MetricTrend:
+      type: object
+      properties:
+        value:
+          type: number
+        label:
+          type: string
+
+    ChatMessage:
+      type: object
+      properties:
+        message:
+          type: string
+        context:
+          type: object
+          properties:
+            kolId:
+              type: string
+            visitId:
+              type: string
+            agenda:
+              type: string
+            freeMode:
+              type: boolean
+
+    ChatResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        sources:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              url:
+                type: string
+
+    AudioUpload:
+      type: object
+      properties:
+        id:
+          type: string
+        visitId:
+          type: string
+        status:
+          type: string
+          enum: [processing, completed, failed]
+        audioUrl:
+          type: string
+        duration:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        estimatedProcessingTime:
+          type: integer
+          nullable: true
+
+    AudioStatus:
+      type: object
+      properties:
+        id:
+          type: string
+        visitId:
+          type: string
+        status:
+          type: string
+          enum: [processing, completed, failed]
+        progress:
+          type: integer
+        transcript:
+          type: string
+          nullable: true
+        audioUrl:
+          type: string
+        duration:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        error:
+          type: string
+          nullable: true
+
+    TranscriptUpdate:
+      type: object
+      required:
+        - transcript
+      properties:
+        transcript:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+          nullable: true
+        offset:
+          type: integer
+
+    SuccessResponse:
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: object
+            - type: array
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+paths:
+  /api/kols:
+    get:
+      tags:
+        - KOLs
+      summary: Listar KOLs
+      description: Lista todos os KOLs com suporte a filtros e busca
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Busca por nome, especialidade ou instituição
+        - name: level
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 6
+          description: Filtro por nível de engajamento
+        - name: profile
+          in: query
+          schema:
+            type: string
+            enum: [prescriber, hospital_manager, payer, pharmacist, researcher]
+          description: Filtro por perfil
+        - name: specialty
+          in: query
+          schema:
+            type: string
+          description: Filtro por especialidade
+        - name: institution
+          in: query
+          schema:
+            type: string
+          description: Filtro por instituição
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: Limite de resultados
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: Offset para paginação
+      responses:
+        '200':
+          description: Lista de KOLs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KOL'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - KOLs
+      summary: Criar novo KOL
+      description: Cria um novo KOL na carteira
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KOLCreate'
+      responses:
+        '201':
+          description: KOL criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/KOL'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Email ou CRM já existe
+
+  /api/kols/{id}:
+    get:
+      tags:
+        - KOLs
+      summary: Obter KOL específico
+      description: Retorna detalhes completos de um KOL específico
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: KOL encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/KOL'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - KOLs
+      summary: Atualizar KOL
+      description: Atualiza um KOL existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KOLUpdate'
+      responses:
+        '200':
+          description: KOL atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/KOL'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - KOLs
+      summary: Deletar KOL
+      description: Remove um KOL da carteira e todas as visitas relacionadas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: KOL deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  deletedVisits:
+                    type: integer
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/visits:
+    get:
+      tags:
+        - Visits
+      summary: Listar visitas
+      description: Lista todas as visitas com suporte a múltiplos filtros
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [scheduled, completed, cancelled]
+        - name: kolId
+          in: query
+          schema:
+            type: string
+        - name: dateStart
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: dateEnd
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [presential, remote]
+        - name: hasReport
+          in: query
+          schema:
+            type: boolean
+          description: Se true, retorna apenas visitas com relatório. Se false, apenas sem relatório
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Lista de visitas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Visit'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Visits
+      summary: Criar nova visita
+      description: Cria uma nova visita (agendamento)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitCreate'
+      responses:
+        '201':
+          description: Visita criada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: KOL não encontrado
+        '409':
+          description: Conflito de agendamento
+        '422':
+          description: Data no passado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/visits/{id}:
+    get:
+      tags:
+        - Visits
+      summary: Obter visita específica
+      description: Retorna detalhes completos de uma visita
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Visita encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Visits
+      summary: Atualizar visita
+      description: Atualiza uma visita existente. Usado para completar visita, adicionar relatório, etc.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitUpdate'
+      responses:
+        '200':
+          description: Visita atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Visit'
+                  kolUpdated:
+                    type: object
+                    nullable: true
+                    properties:
+                      id:
+                        type: string
+                      level:
+                        type: integer
+                      lastVisit:
+                        type: string
+                        format: date
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Visits
+      summary: Deletar visita
+      description: Remove uma visita
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Visita deletada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/documents:
+    get:
+      tags:
+        - Documents
+      summary: Listar documentos
+      description: Lista todos os documentos disponíveis na central de conhecimento
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [articles, studies, behavioral, knowledge-base]
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Busca por título ou descrição
+        - name: tags
+          in: query
+          schema:
+            type: string
+          description: Filtro por tags (separadas por vírgula)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Lista de documentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Documents
+      summary: Criar documento
+      description: Cria um novo documento na central de conhecimento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '201':
+          description: Documento criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/documents/{id}:
+    get:
+      tags:
+        - Documents
+      summary: Obter documento específico
+      description: Retorna detalhes de um documento específico
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Documento encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Document'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags:
+        - Documents
+      summary: Atualizar documento
+      description: Atualiza um documento existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentCreate'
+      responses:
+        '200':
+          description: Documento atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Document'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Documents
+      summary: Deletar documento
+      description: Remove um documento da central de conhecimento
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Documento deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/briefings/{kolId}:
+    get:
+      tags:
+        - Briefings
+      summary: Obter briefing para KOL
+      description: Retorna o briefing inteligente para um KOL específico
+      parameters:
+        - name: kolId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: visitId
+          in: query
+          schema:
+            type: string
+          description: ID da visita específica para gerar briefing
+      responses:
+        '200':
+          description: Briefing gerado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SmartBriefing'
+        '404':
+          description: KOL não encontrado ou não há visita agendada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/dashboard/metrics:
+    get:
+      tags:
+        - Dashboard
+      summary: Obter métricas do dashboard
+      description: Retorna métricas agregadas do dashboard com suporte a filtros de data
+      parameters:
+        - name: start
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Data inicial do período (padrão: início do mês atual)
+        - name: end
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Data final do período (padrão: fim do mês atual)
+        - name: comparisonStart
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Data inicial do período de comparação
+        - name: comparisonEnd
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Data final do período de comparação
+      responses:
+        '200':
+          description: Métricas do dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DashboardMetrics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/chat/message:
+    post:
+      tags:
+        - Chat
+      summary: Enviar mensagem ao chat
+      description: Envia uma mensagem ao chat inteligente e recebe resposta contextualizada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessage'
+      responses:
+        '200':
+          description: Resposta do chat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChatResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/sync:
+    post:
+      tags:
+        - Sync
+      summary: Sincronizar dados
+      description: Sincroniza dados do sistema (atualiza status de visitas, lastVisit/nextVisit dos KOLs)
+      responses:
+        '200':
+          description: Sincronização concluída
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updated:
+                    type: object
+                    properties:
+                      visits:
+                        type: integer
+                      kols:
+                        type: integer
+                      briefings:
+                        type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/data/seed:
+    post:
+      tags:
+        - Seed
+      summary: Popular dados iniciais
+      description: Popula o banco de dados com dados iniciais para desenvolvimento/demonstração
+      security: []
+      parameters:
+        - name: kolCount
+          in: query
+          schema:
+            type: integer
+            default: 42
+          description: Número de KOLs a gerar
+        - name: visitCount
+          in: query
+          schema:
+            type: integer
+          description: Número de visitas a gerar (calculado automaticamente se não fornecido)
+      responses:
+        '200':
+          description: Dados seed gerados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  generated:
+                    type: object
+                    properties:
+                      kols:
+                        type: integer
+                      visits:
+                        type: integer
+                      briefings:
+                        type: integer
+
+  /api/visits/{visitId}/audio:
+    post:
+      tags:
+        - Audio
+      summary: Upload e transcrição de áudio
+      description: Faz upload de um arquivo de áudio e inicia o processo de transcrição
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - audio
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                  description: Arquivo de áudio (webm, mp3, wav, m4a, ogg)
+      responses:
+        '200':
+          description: Transcrição concluída (síncrona)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AudioUpload'
+                  visitUpdated:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      audioTranscript:
+                        type: string
+        '202':
+          description: Upload aceito, transcrição em processamento (assíncrona)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AudioUpload'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Visita não encontrada
+        '413':
+          description: Arquivo muito grande
+        '415':
+          description: Formato de áudio não suportado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/visits/{visitId}/audio/{audioId}:
+    get:
+      tags:
+        - Audio
+      summary: Obter status de transcrição
+      description: Obtém o status de uma transcrição em processamento
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: audioId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status da transcrição
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AudioStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Audio
+      summary: Deletar áudio e transcrição
+      description: Remove o arquivo de áudio e a transcrição associada
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: audioId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Áudio deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  visitUpdated:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      audioTranscript:
+                        type: string
+                        nullable: true
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/visits/{visitId}/audio/{audioId}/transcript:
+    put:
+      tags:
+        - Audio
+      summary: Atualizar transcrição manualmente
+      description: Permite atualizar manualmente o texto da transcrição
+      parameters:
+        - name: visitId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: audioId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranscriptUpdate'
+      responses:
+        '200':
+          description: Transcrição atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AudioStatus'
+                  visitUpdated:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      audioTranscript:
+                        type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

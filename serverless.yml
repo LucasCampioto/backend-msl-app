@@ -1,0 +1,25 @@
+service: backend-msl-app
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  timeout: 30
+  memorySize: 1024
+  environment:
+    STAGE: ${self:provider.stage}
+    DB_URL: ${file(./config.${self:provider.stage}.json):DB_URL}
+    SECRET_TOKEN: ${file(./config.${self:provider.stage}.json):SECRET_TOKEN}
+
+functions:
+  app:
+    handler: handler.index
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+
+plugins:
+  - serverless-offline
