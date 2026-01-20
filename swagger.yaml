@@ -523,6 +523,26 @@ components:
         meta:
           $ref: '#/components/schemas/PaginationMeta'
 
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Não autorizado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
 paths:
   /api/kols:
     get:
@@ -1416,24 +1436,3 @@ paths:
           $ref: '#/components/responses/NotFound'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-components:
-  responses:
-    BadRequest:
-      description: Requisição inválida
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    Unauthorized:
-      description: Não autorizado
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: Recurso não encontrado
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
