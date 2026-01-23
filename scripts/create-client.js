@@ -12,7 +12,7 @@ const createClient = async () => {
   try {
     await connect()
 
-    const token = 'F8mhwFjI2Ueo2BqPWr6AXC2Z-YpS073JJqstcVk'
+    const token = 'apikey no banco'
     const name = process.env.CLIENT_NAME || 'Development Client'
 
     // Verificar se já existe
