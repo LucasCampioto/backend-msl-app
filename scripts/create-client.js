@@ -12,7 +12,7 @@ const createClient = async () => {
   try {
     await connect()
 
-    const token = process.env.API_KEY || 'dev-api-key-12345'
+    const token = 'F8mhwFjI2Ueo2BqPWr6AXC2Z-YpS073JJqstcVk'
     const name = process.env.CLIENT_NAME || 'Development Client'
 
     // Verificar se já existe

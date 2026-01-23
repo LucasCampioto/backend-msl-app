@@ -4,10 +4,20 @@
   "description": "Backend API para sistema MSL (Medical Science Liaison)",
   "main": "handler.js",
   "scripts": {
-    "dev": "nodemon handler.js",
-    "offline": "serverless offline",
-    "standard": "standard --fix",
+    "dev2": "serverless offline start --apiKey F8mhwFjI2Ueo2BqPWr6AXC2Z-YpS073JJqstcVk",
+    "clean": "rm -rf node_modules",
+    "reinstall": "npm run clean && npm install",
+    "debug": "SLS_DEBUG=* DEBUG=* node --inspect /usr/local/bin/serverless offline start --apiKey F8mhwFjI2Ueo2BqPWr6AXC2Z-YpS073JJqstcVk",
+    "dev": "npm run husky && nodemon --exec 'sls offline start --noAuth --apiKey F8mhwFjI2Ueo2BqPWr6AXC2Z-YpS073JJqstcVk'",
+    "offline": "sls offline start",
     "test": "jest",
+    "test:ci": "jest --ci --config=jest.config.js",
+    "test:ci:json": "jest --ci --reporters=default --reporters=jest-sonar --reporters=jest-junit --config=jest.config.js",
+    "husky": "rm -rf .husky && husky && echo \"npm run build\" > .husky/pre-commit && chmod +x .husky/pre-commit && git add .husky/pre-commit",
+    "build:ci": "npm run prettier && npm run standard",
+    "build": "npm run prettier && npm run standard && npm run console",
+    "prettier": "prettier -w .",
+    "standard": "standard",
     "start": "node handler.js"
   },
   "keywords": [
@@ -30,7 +40,7 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "serverless-offline": "^13.0.0",
+    "serverless-offline": "^8.8.1",
     "standard": "^17.0.0",
     "nodemon": "^3.0.0",
     "jest": "^29.0.0"

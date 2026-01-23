@@ -9,6 +9,10 @@ const swaggerUi = require('swagger-ui-express')
 const YAML = require('yamljs')
 const path = require('path')
 
+// Carrega configuração baseada no ambiente
+const env = process.env.NODE_ENV || 'dev'
+const config = require(`./config.${env}.json`)
+
 const app = express()
 
 // Middleware para parsing JSON
@@ -53,21 +57,61 @@ try {
   error('Erro ao carregar Swagger:', err.message)
 }
 
-// Middleware de validação de API Key
+// Middleware de validação de API Key e Secret Token
 const validateApiKey = isPrivate => {
   return (req, res, next) => {
     if (isPrivate === false) return next()
 
+    // Validar X-API-KEY (gerenciada pelo serverless-offline via --apiKey)
     const apiKey = req.headers['x-api-key'] || req.headers['X-API-KEY']
     if (!apiKey) {
       error('Acesso negado: X-API-KEY não fornecida', { path: req.path })
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Forbidden'
+          message: 'X-API-KEY is required'
         }
       })
     }
+
+    // Validar secret_token no Bearer
+    const authHeader = req.headers.authorization || req.headers.Authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      error('Acesso negado: Bearer token não fornecido', { path: req.path })
+      return res.status(401).json({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Bearer token is required'
+        }
+      })
+    }
+
+    const secretToken = authHeader.split(' ')[1]
+    if (!secretToken) {
+      error('Acesso negado: secret_token vazio', { path: req.path })
+      return res.status(401).json({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Invalid Bearer token'
+        }
+      })
+    }
+
+    // Validar secret_token contra o config
+    if (secretToken !== config.SECRET_TOKEN) {
+      error('Acesso negado: secret_token inválido', { path: req.path })
+      return res.status(401).json({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Invalid Bearer token'
+        }
+      })
+    }
+
+    // Armazena os tokens no request para uso posterior
+    req.apiKey = apiKey
+    req.secretToken = secretToken
+
     next()
   }
 }
