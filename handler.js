@@ -10,7 +10,7 @@ const YAML = require('yamljs')
 const path = require('path')
 
 // Carrega configuração baseada no ambiente
-const env = process.env.NODE_ENV || 'dev'
+const env = process.env.STAGE || process.env.NODE_ENV || 'dev'
 const config = require(`./config.${env}.json`)
 
 const app = express()
