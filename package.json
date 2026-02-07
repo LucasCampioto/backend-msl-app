@@ -18,7 +18,12 @@
     "build": "npm run prettier && npm run standard && npm run console",
     "prettier": "prettier -w .",
     "standard": "standard",
-    "start": "node handler.js"
+    "start": "node handler.js",
+    "deploy:prod": "serverless deploy --stage prod",
+    "deploy:dev": "serverless deploy --stage dev",
+    "logs:prod": "serverless logs -f app --stage prod --tail",
+    "logs:dev": "serverless logs -f app --stage dev --tail",
+    "info:prod": "serverless info --stage prod"
   },
   "keywords": [
     "msl",
